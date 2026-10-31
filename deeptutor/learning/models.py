@@ -796,6 +796,7 @@ class LearningProgress(BaseModel):
     feynman_explanations: dict[str, str] = Field(default_factory=dict)
     stage_failure_counts: dict[str, int] = Field(default_factory=dict)
     stage_failure_notes: dict[str, str] = Field(default_factory=dict)
+    target_exam_date: float | None = None
     version: int = 0
     created_at: float = Field(default_factory=time.time)
     updated_at: float = Field(default_factory=time.time)

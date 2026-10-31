@@ -104,6 +104,16 @@ class RetentionScheduler(Protocol):
         now: float | None = None,
     ) -> RepetitionState: ...
 
+    def schedule_exam_paced_review(
+        self,
+        state: RepetitionState,
+        knowledge_type: KnowledgeType,
+        evidence: LearningEvidence,
+        *,
+        exam_date: float | None = None,
+        now: float | None = None,
+    ) -> RepetitionState: ...
+
     def retrievability(self, state: RepetitionState, *, now: float | None = None) -> float: ...
 
     def forgetting_risk(
@@ -381,6 +391,32 @@ class SpacedRepetitionScheduler:
         interval_days = self._scheduled_interval_days(state, knowledge_type)
         state.next_review_at = moment + interval_days * self._seconds_per_unit()
         state.interval_index = _snap_interval_index(intervals, interval_days, max_index)
+        return state
+
+    def schedule_exam_paced_review(
+        self,
+        state: RepetitionState,
+        knowledge_type: KnowledgeType,
+        evidence: LearningEvidence,
+        *,
+        exam_date: float | None = None,
+        now: float | None = None,
+    ) -> RepetitionState:
+        state = self.schedule_review(state, knowledge_type, evidence, now=now)
+        if exam_date is None:
+            return state
+
+        t_now = now if now is not None else (state.last_scheduled_at or time.time())
+        delta_exam = (exam_date - t_now) / 86400.0
+
+        if delta_exam <= 0:
+            state.next_review_at = t_now + 3600.0
+        elif delta_exam <= 14.0:
+            kappa = max(0.2, delta_exam / 14.0)
+            base_interval = state.next_review_at - t_now
+            compressed_interval = base_interval * kappa
+            target = min(t_now + compressed_interval, exam_date - 0.5 * 86400.0)
+            state.next_review_at = max(t_now, target)
         return state
 
     def retrievability(self, state: RepetitionState, *, now: float | None = None) -> float:
