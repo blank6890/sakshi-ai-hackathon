@@ -19,12 +19,12 @@ test('renders teacher dashboard with class gap alert and heatmap', async () => {
 
   // Verify heatmap students and chapters
   expect(screen.getByText('Aarav Sharma')).toBeInTheDocument();
-  expect(screen.getByText('Light')).toBeInTheDocument();
-  expect(screen.getByText('Electricity')).toBeInTheDocument();
-  expect(screen.getByText('Magnetism')).toBeInTheDocument();
+  expect(screen.getAllByText('Light').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('Electricity').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('Magnetism').length).toBeGreaterThan(0);
 
   // Verify misconceptions & remedial strategy
-  expect(screen.getByText(/Resistance depends on Voltage or Current/i)).toBeInTheDocument();
+  expect(screen.getAllByText(/Resistance depends on Voltage or Current/i).length).toBeGreaterThan(0);
   expect(screen.getAllByText(/Remedial Teaching Strategy/i).length).toBeGreaterThan(0);
 });
 

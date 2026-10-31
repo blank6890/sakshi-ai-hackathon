@@ -37,9 +37,9 @@ function formatPercent(val: number): string {
 
 function normalizeChapter(chapterName?: string): string {
   if (!chapterName) return 'General';
-  if (/light/i.test(chapterName)) return 'Light';
-  if (/electric/i.test(chapterName)) return 'Electricity';
   if (/magnet/i.test(chapterName)) return 'Magnetism';
+  if (/electric/i.test(chapterName)) return 'Electricity';
+  if (/light/i.test(chapterName)) return 'Light';
   return chapterName;
 }
 
