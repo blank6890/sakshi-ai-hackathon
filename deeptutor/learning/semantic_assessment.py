@@ -38,15 +38,17 @@ class AssessmentUnavailable(ValueError):
 
 
 class Verdict(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
     result: Literal["correct", "partial", "incorrect", "ungraded"]
     confidence: float = Field(ge=0, le=1)
     feedback: str = Field(min_length=1, max_length=2000)
+    misconception_id: str | None = None
+    reasoning_valid: bool | None = None
 
     def receipt(self):
         final = self.result != "ungraded" and self.confidence >= 0.8
         result = self.result if final else "ungraded"
-        return {
+        data = {
             "result": result,
             "final": final,
             "needs_clarification": not final,
@@ -54,6 +56,11 @@ class Verdict(BaseModel):
             "feedback": self.feedback,
             "confidence": self.confidence,
         }
+        if self.misconception_id is not None:
+            data["misconception_id"] = self.misconception_id
+        if self.reasoning_valid is not None:
+            data["reasoning_valid"] = self.reasoning_valid
+        return data
 
 
 def fingerprint(value) -> str:
@@ -203,6 +210,39 @@ async def judge_answers(config, items):
         }
         if set(result) != {item["question_id"] for item in items}:
             raise ValueError()
+
+        # Integrate reasoning-based misconception detection
+        from deeptutor.learning.misconception import analyze_reasoning_and_misconceptions
+
+        for item in items:
+            qid = item.get("question_id")
+            if qid in result:
+                verdict = result[qid]
+                reasoning = str(item.get("reasoning") or item.get("student_reasoning") or "")
+                answer = str(item.get("answer") or "")
+                expected = str(item.get("expected_answer") or "")
+                concept_id = str(item.get("knowledge_point_id") or "")
+                question_text = str(item.get("prompt") or "")
+
+                if reasoning or (concept_id and answer):
+                    analysis = analyze_reasoning_and_misconceptions(
+                        concept_id=concept_id,
+                        question=question_text,
+                        expected_answer=expected,
+                        student_answer=answer,
+                        student_reasoning=reasoning,
+                        llm_config=config,
+                    )
+                    if analysis.misconception_id:
+                        verdict.misconception_id = analysis.misconception_id
+                        verdict.reasoning_valid = analysis.reasoning_valid
+                        if verdict.result == "correct" and not analysis.reasoning_valid:
+                            verdict.feedback = f"Lucky guess detected: {analysis.remedial_feedback}"
+                        elif verdict.result == "incorrect" and analysis.remedial_feedback:
+                            verdict.feedback = analysis.remedial_feedback
+                    elif reasoning and analysis.reasoning_valid is not None:
+                        verdict.reasoning_valid = analysis.reasoning_valid
+
         return result
     except (KeyError, TypeError, ValueError) as exc:
         raise AssessmentUnavailable(
