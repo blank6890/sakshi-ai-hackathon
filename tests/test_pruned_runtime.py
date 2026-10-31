@@ -1,4 +1,5 @@
 import os
+from deeptutor.capabilities.registry import CapabilityRegistry
 from deeptutor.runtime.bootstrap.builtin_capabilities import BUILTIN_CAPABILITY_SPECS
 from deeptutor.tools.builtin import USER_TOGGLEABLE_TOOL_NAMES
 
@@ -7,6 +8,11 @@ def test_bloat_capabilities_unregistered():
     assert "video_lesson" not in BUILTIN_CAPABILITY_SPECS
     assert "marginnote4" not in BUILTIN_CAPABILITY_SPECS
     assert "obsidian" not in BUILTIN_CAPABILITY_SPECS
+    registry = CapabilityRegistry()
+    assert "math_animator" not in registry.list_all()
+    assert "video_lesson" not in registry.list_all()
+    assert "marginnote4" not in registry.list_all()
+    assert "obsidian" not in registry.list_all()
 
 def test_bloat_tools_unregistered():
     assert "geogebra_analysis" not in USER_TOGGLEABLE_TOOL_NAMES

@@ -210,6 +210,7 @@ def capability_tool_owners() -> dict[str, str]:
 
 
 __all__ = [
+    "CapabilityRegistry",
     "EXTENSIONS_GROUP",
     "BUILTIN_LOOP_CAPABILITY_SPECS",
     "LOOP_CAPABILITIES",
