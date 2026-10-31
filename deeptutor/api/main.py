@@ -516,6 +516,10 @@ from deeptutor.api.module_routes import mount_module_routes
 
 mount_module_routes(app, _router_loader)
 
+from deeptutor.api.routers.diagnostic import router as diagnostic_router
+
+app.include_router(diagnostic_router)
+
 
 @app.get("/")
 async def root():
