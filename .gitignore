@@ -6,7 +6,7 @@
 # User Generated Data and Outputs
 # ============================================
 # Runtime data (knowledge bases, partner workspaces, memory, etc.)
-data/
+/data/
 /multi-user/
 # Developer and agent documentation is tracked in docs-for-dev/.
 # Keep obsolete local notes and downloaded references out of the repository.
