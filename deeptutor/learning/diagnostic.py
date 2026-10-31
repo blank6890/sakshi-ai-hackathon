@@ -170,6 +170,7 @@ class DiagnosticEngine:
         session.status = "completed"
         session.score = score
         session.concept_mastery = concept_mastery
+        self._latest_completed_session = session
 
         return {
             "status": "completed",
@@ -177,6 +178,10 @@ class DiagnosticEngine:
             "score": score,
             "concept_mastery": concept_mastery,
         }
+
+    def get_latest_completed_session(self) -> DiagnosticSession | None:
+        """Return the most recently completed diagnostic assessment session."""
+        return getattr(self, "_latest_completed_session", None)
 
     def get_report(self, session_id: str) -> dict[str, Any]:
         """Generate comprehensive diagnostic report with frontier recommendations."""

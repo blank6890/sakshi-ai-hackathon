@@ -326,6 +326,75 @@ class CohortService:
         summary = self.get_cohort_summary(cohort_id)
         return summary["top_gaps"]
 
+    def find_student(
+        self, student_id: str, cohort_id: str = "class-10-a"
+    ) -> dict[str, Any] | None:
+        """Find a student record by student_id in the given cohort or across all cohorts."""
+        if cohort_id in self._cohorts:
+            for s in self._cohorts[cohort_id]["students"]:
+                if s["student_id"] == student_id:
+                    return s
+        for c in self._cohorts.values():
+            for s in c["students"]:
+                if s["student_id"] == student_id:
+                    return s
+        return None
+
+    def get_or_create_student(
+        self,
+        student_id: str,
+        cohort_id: str = "class-10-a",
+        default_mastery: dict[str, float] | None = None,
+    ) -> dict[str, Any]:
+        """Retrieve existing student or create a new student entry in the cohort."""
+        existing = self.find_student(student_id, cohort_id)
+        if existing is not None:
+            return existing
+
+        cohort = self._cohorts.setdefault(
+            cohort_id,
+            {
+                "cohort_id": cohort_id,
+                "cohort_name": f"Cohort {cohort_id}",
+                "curriculum": "class10_physics",
+                "students": [],
+            },
+        )
+        new_student = {
+            "student_id": student_id,
+            "student_name": f"Student {student_id}",
+            "mastery_levels": dict(default_mastery) if default_mastery else {},
+            "active_misconceptions": [],
+        }
+        cohort["students"].append(new_student)
+        return new_student
+
+    def get_student_mastery(
+        self, student_id: str, cohort_id: str = "class-10-a"
+    ) -> dict[str, float]:
+        """Get student's mastery levels map, or empty dict if not found."""
+        student = self.find_student(student_id, cohort_id)
+        if student:
+            return student.get("mastery_levels", {})
+        return {}
+
+    def record_student_attempt(
+        self,
+        student_id: str,
+        concept_id: str,
+        bkt_mastery: float,
+        cohort_id: str = "class-10-a",
+        misconception_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Update student mastery and active misconceptions in the cohort."""
+        student = self.get_or_create_student(student_id, cohort_id)
+        student["mastery_levels"][concept_id] = round(float(bkt_mastery), 4)
+        if misconception_id:
+            active = student.setdefault("active_misconceptions", [])
+            if misconception_id not in active:
+                active.append(misconception_id)
+        return student
+
 
 _default_cohort_service: CohortService | None = None
 

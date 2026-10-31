@@ -518,9 +518,11 @@ mount_module_routes(app, _router_loader)
 
 from deeptutor.api.routers.diagnostic import router as diagnostic_router
 from deeptutor.api.routers.teacher import router as teacher_router
+from deeptutor.api.routers.adaptive_learning import router as adaptive_learning_router
 
 app.include_router(diagnostic_router)
 app.include_router(teacher_router)
+app.include_router(adaptive_learning_router)
 
 
 @app.get("/")

@@ -1,5 +1,5 @@
 {
-  "fingerprint": "89ccb148b2f2be2f26231881c20cd6c77da096d6b16a24103a2670e8db3db538",
+  "fingerprint": "0e7cedd07cdaf942b72ac1250fbc47e97290ba516bbd7e57633e33bbd7dac005",
   "routers": {
     "deeptutor.api.routers.auth:router": [
       {
@@ -5739,56 +5739,6 @@
         "kind": "http",
         "methods": [
           "GET"
-        ]
-      }
-    ],
-    "deeptutor.api.routers.marginnote4:router": [
-      {
-        "path": "/pair",
-        "name": "pair_device",
-        "kind": "http",
-        "methods": [
-          "POST"
-        ]
-      },
-      {
-        "path": "/devices",
-        "name": "list_devices",
-        "kind": "http",
-        "methods": [
-          "GET"
-        ]
-      },
-      {
-        "path": "/devices/{device_id}",
-        "name": "revoke_device",
-        "kind": "http",
-        "methods": [
-          "DELETE"
-        ]
-      },
-      {
-        "path": "/status",
-        "name": "status",
-        "kind": "http",
-        "methods": [
-          "GET"
-        ]
-      },
-      {
-        "path": "/sync",
-        "name": "sync_objects",
-        "kind": "http",
-        "methods": [
-          "POST"
-        ]
-      },
-      {
-        "path": "/heartbeat",
-        "name": "heartbeat",
-        "kind": "http",
-        "methods": [
-          "POST"
         ]
       }
     ],

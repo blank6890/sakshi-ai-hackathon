@@ -84,9 +84,7 @@ async def test_list_builtin_tools_marks_toggleable_set(
         "brainstorm",
         "web_search",
         "paper_search",
-        "zotero_search",
         "reason",
-        "geogebra_analysis",
         "imagegen",
         "videogen",
     }

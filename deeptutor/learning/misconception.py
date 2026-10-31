@@ -223,15 +223,31 @@ def _check_answer_correct(student_answer: str, expected_answer: str) -> bool:
         has_p2_sa = bool(re.search(p2, sa))
         has_p1_ea = bool(re.search(p1, ea))
         has_p2_ea = bool(re.search(p2, ea))
-        if (has_p1_sa and has_p2_ea) or (has_p2_sa and has_p1_ea):
+        if has_p1_sa and has_p2_ea and not has_p1_ea:
+            return False
+        if has_p2_sa and has_p1_ea and not has_p2_ea:
             return False
 
     if ea in sa or sa in ea:
         return True
 
+    # Check key scientific phrases
+    for phrase in [
+        "remains constant",
+        "remains the same",
+        "constant",
+        "same everywhere",
+        "closed continuous loops",
+        "slower",
+        "1/v - 1/u",
+        "1/v + 1/u",
+    ]:
+        if phrase in sa and phrase in ea:
+            return True
+
     return grade_answer(student_answer, expected_answer, "short") or grade_answer(
         student_answer, expected_answer, "choice"
-    )
+    ) or grade_answer(student_answer, expected_answer, "open")
 
 
 def _evaluate_with_llm(

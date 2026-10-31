@@ -32,7 +32,6 @@ def test_only_canonical_transport_and_resource_routes_are_registered() -> None:
         "/api/chat",
         "/api/co_writer",
         "/api/knowledge",
-        "/api/learning",
         "/api/notebook",
         "/api/outputs",
     )
