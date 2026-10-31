@@ -5,6 +5,7 @@ import time
 from typing import TYPE_CHECKING, Any, Literal
 import uuid
 
+from deeptutor.learning.bkt import calculate_concept_mastery
 from deeptutor.learning.grading import classify_error, grade_answer
 from deeptutor.learning.mastery import compute_mastery
 from deeptutor.learning.models import (
@@ -520,13 +521,13 @@ class LearningService:
         progress.updated_at = time.time()
 
     def calculate_mastery(self, progress: LearningProgress, kp_id: str) -> float:
-        """Mastery 0..1 for *kp_id* from its attempt history (policy in mastery.py)."""
-        correctness = [
-            0.5 if a.result == "partial" else a.is_correct
+        """Mastery 0..1 for *kp_id* from its attempt history using Bayesian Knowledge Tracing."""
+        attempts = [
+            a
             for a in progress.quiz_attempts
             if a.knowledge_point_id == kp_id and not a.voided and a.independent
         ]
-        return compute_mastery(correctness)
+        return calculate_concept_mastery(attempts)
 
     def update_mastery(self, progress: LearningProgress, kp_id: str, level: float) -> None:
         progress.mastery_levels[kp_id] = level

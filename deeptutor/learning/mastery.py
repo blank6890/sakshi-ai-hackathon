@@ -12,29 +12,20 @@ callers (`LearningService.calculate_mastery`) need not change.
 
 from __future__ import annotations
 
-# Recency weights for the most recent attempts (oldest -> newest). Newer
-# attempts count more, so recovery after early mistakes is rewarded.
-_RECENCY_WEIGHTS: tuple[float, ...] = (0.5, 0.7, 0.85, 0.95, 1.0)
-
-# Mastery cannot exceed this until enough attempts accumulate, so one or two
-# correct answers cannot declare a point "mastered".
-_CONFIDENCE_CAP: dict[int, float] = {1: 0.5, 2: 0.8}
+from deeptutor.learning.bkt import BKTParameters, compute_bkt_mastery
 
 
-def compute_mastery(correctness: list[bool | float]) -> float:
-    """Return a 0..1 mastery score from a knowledge point's attempt outcomes.
+def compute_mastery(
+    correctness: list[bool | float],
+    params: BKTParameters | None = None,
+) -> float:
+    """Return a 0..1 mastery score from a knowledge point's attempt outcomes using BKT.
 
     Args:
         correctness: per-attempt correctness or bounded partial credit, chronologically.
+        params: optional BKT parameters (prior, transition, slip, guess).
     """
-    if not correctness:
-        return 0.0
-    recent = correctness[-len(_RECENCY_WEIGHTS) :]
-    weights = _RECENCY_WEIGHTS[-len(recent) :]
-    score = sum(
-        w * max(0.0, min(1.0, float(c))) for c, w in zip(recent, weights, strict=True)
-    ) / sum(weights)
-    return min(score, _CONFIDENCE_CAP.get(len(recent), 1.0))
+    return compute_bkt_mastery(correctness, params=params)
 
 
-__all__ = ["compute_mastery"]
+__all__ = ["compute_bkt_mastery", "compute_mastery"]
