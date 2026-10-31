@@ -97,7 +97,7 @@ PYTHONPATH=/home/blank/sakshi-ai-hackathon /home/blank/DeepTutor-git/.venv/bin/p
 ### 3. Run Web / Frontend Unit Tests
 ```bash
 cd web
-npm test
+npm run test:unit
 ```
 
 ### 4. Start the Full System
