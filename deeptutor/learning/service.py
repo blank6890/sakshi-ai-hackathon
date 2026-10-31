@@ -533,6 +533,52 @@ class LearningService:
         progress.mastery_levels[kp_id] = level
         progress.updated_at = time.time()
 
+    def get_next_targeted_question(
+        self,
+        progress: LearningProgress,
+        curriculum_graph: Any = None,
+    ) -> dict[str, Any]:
+        """Generate next targeted question calibrated to learner's ZPD and active misconceptions."""
+        import re
+        from deeptutor.learning.curriculum import CurriculumGraph
+        from deeptutor.learning.misconception import PHYSICS_MISCONCEPTIONS
+        from deeptutor.learning.question_generator import QuestionSelector
+
+        graph = curriculum_graph or CurriculumGraph.load_default("class10_physics")
+        selector = QuestionSelector(graph)
+
+        active_misconceptions: dict[str, list[str]] = {}
+        if getattr(progress, "active_misconceptions", None):
+            active_misconceptions.update(progress.active_misconceptions)
+
+        for record in getattr(progress, "error_records", []):
+            if getattr(record, "status", "") == "active":
+                cid = record.knowledge_point_id
+                ai_conf = getattr(record, "ai_confirmation", "")
+                self_attr = getattr(record, "self_attribution", "")
+                matched = False
+                for m_id, meta in PHYSICS_MISCONCEPTIONS.items():
+                    remedial = meta.get("remedial_feedback", "")
+                    if remedial and (remedial in ai_conf or ai_conf in remedial):
+                        if m_id not in active_misconceptions.get(cid, []):
+                            active_misconceptions.setdefault(cid, []).append(m_id)
+                        matched = True
+                        break
+                if not matched and self_attr:
+                    for m_id, meta in PHYSICS_MISCONCEPTIONS.items():
+                        if cid in meta.get("concept_ids", []):
+                            for pat in meta.get("flawed_patterns", []):
+                                if re.search(pat, self_attr, re.IGNORECASE):
+                                    if m_id not in active_misconceptions.get(cid, []):
+                                        active_misconceptions.setdefault(cid, []).append(m_id)
+                                    break
+
+        target = selector.select_next_target(
+            mastery_levels=progress.mastery_levels,
+            active_misconceptions=active_misconceptions,
+        )
+        return selector.generate_question(target)
+
     def grade_and_record(
         self,
         progress: LearningProgress,
